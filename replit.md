@@ -1,8 +1,24 @@
-# Unisphere Browser - Minimalist Browser Start Page
+# Unisphere Browser - Полнофункциональный Веб-Браузер
 
-## Overview
+## Обзор
 
-Unisphere Browser is a minimalist browser start page application featuring a liquid-glass aesthetic with animated backgrounds. The application provides a clean, modern interface for web navigation with popular site shortcuts and search functionality. Built with React, TypeScript, and modern web technologies, it offers a beautiful alternative to standard browser home pages with support for both web and mobile platforms via Capacitor.
+Unisphere Browser - это полнофункциональный веб-браузер с минималистичным дизайном в стиле liquid-glass эстетики с анимированными фонами. Приложение предоставляет чистый, современный интерфейс для веб-навигации с быстрым доступом к популярным сайтам и функцией поиска. Построен на React, TypeScript и современных веб-технологиях.
+
+### Новые возможности
+
+**Полноценный браузер с прокси-сервером:**
+- Загрузка любых веб-сайтов через встроенный прокси-сервер
+- Обход CORS и X-Frame-Options ограничений
+- Поддержка множественных вкладок
+- История навигации (вперед/назад)
+- Обновление страниц
+
+**Анимации и визуальные эффекты:**
+- Анимированный логотип UniSphere с зернистым оранжевым текстом и плавающими частицами
+- Эффекты свечения и пульсации на всех интерактивных элементах
+- Плавные переходы и анимации hover-эффектов
+- Анимированный фон с градиентными сферами
+- Эффект мерцания на поисковой строке
 
 ## User Preferences
 

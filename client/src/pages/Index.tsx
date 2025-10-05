@@ -208,8 +208,8 @@ const Index = () => {
             {tab.url ? (
               <iframe
                 data-tab-id={tab.id}
-                src={tab.url}
-                className="w-full h-full border-none"
+                src={`/api/proxy?url=${encodeURIComponent(tab.url)}`}
+                className="w-full h-full border-none bg-white"
                 title={tab.title}
                 sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
