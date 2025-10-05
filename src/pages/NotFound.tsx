@@ -1,7 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Home, AlertCircle } from 'lucide-react';
-import AnimatedBackground from '@/components/AnimatedBackground';
+import AnimatedGrid from '@/components/AnimatedGrid';
 import { Button } from '@/components/ui/button';
 
 const NotFound = () => {
@@ -13,7 +13,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-      <AnimatedBackground />
+      <AnimatedGrid />
       
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
         {/* Animated error icon */}

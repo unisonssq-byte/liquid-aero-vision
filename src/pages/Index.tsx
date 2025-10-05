@@ -1,94 +1,209 @@
-import { useEffect, useState } from 'react';
-import AnimatedBackground from '@/components/AnimatedBackground';
-import SearchBar from '@/components/SearchBar';
-import QuickLinks from '@/components/QuickLinks';
-import logoMain from '@/assets/logo-main.jpg';
+import { useState } from 'react';
+import { Menu, Bell, Settings, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import BrowserTab from '@/components/BrowserTab';
+import BrowserNavBar from '@/components/BrowserNavBar';
+import BrowserHomePage from '@/components/BrowserHomePage';
 import unisphereIcon from '@/assets/unisphere-icon.png';
 
+interface Tab {
+  id: string;
+  title: string;
+  url: string;
+  history: string[];
+  historyIndex: number;
+}
+
 const Index = () => {
-  const [time, setTime] = useState(new Date());
+  const [tabs, setTabs] = useState<Tab[]>([
+    {
+      id: '1',
+      title: 'New Tab',
+      url: '',
+      history: [''],
+      historyIndex: 0,
+    },
+  ]);
+  const [activeTabId, setActiveTabId] = useState('1');
 
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const activeTab = tabs.find(tab => tab.id === activeTabId);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+  const createNewTab = () => {
+    const newTab: Tab = {
+      id: Date.now().toString(),
+      title: 'New Tab',
+      url: '',
+      history: [''],
+      historyIndex: 0,
+    };
+    setTabs([...tabs, newTab]);
+    setActiveTabId(newTab.id);
+  };
+
+  const closeTab = (tabId: string) => {
+    if (tabs.length === 1) return;
+    
+    const tabIndex = tabs.findIndex(tab => tab.id === tabId);
+    const newTabs = tabs.filter(tab => tab.id !== tabId);
+    
+    if (activeTabId === tabId) {
+      const newActiveTab = newTabs[Math.max(0, tabIndex - 1)];
+      setActiveTabId(newActiveTab.id);
+    }
+    
+    setTabs(newTabs);
+  };
+
+  const navigateToUrl = (url: string) => {
+    if (!activeTab) return;
+
+    const newHistory = activeTab.history.slice(0, activeTab.historyIndex + 1);
+    newHistory.push(url);
+
+    const updatedTabs = tabs.map(tab =>
+      tab.id === activeTabId
+        ? {
+            ...tab,
+            url,
+            title: new URL(url).hostname.replace('www.', '') || 'New Tab',
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+          }
+        : tab
+    );
+
+    setTabs(updatedTabs);
+  };
+
+  const goBack = () => {
+    if (!activeTab || activeTab.historyIndex <= 0) return;
+
+    const newIndex = activeTab.historyIndex - 1;
+    const updatedTabs = tabs.map(tab =>
+      tab.id === activeTabId
+        ? {
+            ...tab,
+            url: tab.history[newIndex],
+            historyIndex: newIndex,
+          }
+        : tab
+    );
+
+    setTabs(updatedTabs);
+  };
+
+  const goForward = () => {
+    if (!activeTab || activeTab.historyIndex >= activeTab.history.length - 1) return;
+
+    const newIndex = activeTab.historyIndex + 1;
+    const updatedTabs = tabs.map(tab =>
+      tab.id === activeTabId
+        ? {
+            ...tab,
+            url: tab.history[newIndex],
+            historyIndex: newIndex,
+          }
+        : tab
+    );
+
+    setTabs(updatedTabs);
+  };
+
+  const reload = () => {
+    if (!activeTab || !activeTab.url) return;
+    
+    const iframe = document.querySelector(`iframe[data-tab-id="${activeTabId}"]`) as HTMLIFrameElement;
+    if (iframe) {
+      iframe.src = iframe.src;
+    }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <AnimatedBackground />
-      
-      {/* Header with logo */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-6">
+    <div className="h-screen flex flex-col bg-[#0a0a0a] text-foreground overflow-hidden">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-[#0f0f0f] border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 animate-float">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-xl opacity-40 blur-lg animate-glow" />
-            <img
-              src={unisphereIcon}
-              alt="Unisphere Browser"
-              className="relative w-full h-full object-contain rounded-xl"
-              style={{ mixBlendMode: 'screen' }}
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground/60 hover:text-foreground hover:bg-white/5">
+            <Menu className="w-5 h-5" />
+          </Button>
+          <img
+            src={unisphereIcon}
+            alt="Unisphere"
+            className="w-8 h-8 object-contain"
+            style={{ mixBlendMode: 'screen' }}
+          />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground/60 hover:text-foreground hover:bg-white/5">
+            <Bell className="w-5 h-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground/60 hover:text-foreground hover:bg-white/5">
+            <Settings className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Tabs Bar */}
+      <div className="flex items-center bg-[#0f0f0f] border-b border-white/5">
+        <div className="flex flex-1 overflow-x-auto scrollbar-hide">
+          {tabs.map(tab => (
+            <BrowserTab
+              key={tab.id}
+              id={tab.id}
+              title={tab.title}
+              url={tab.url}
+              isActive={tab.id === activeTabId}
+              onSelect={() => setActiveTabId(tab.id)}
+              onClose={() => closeTab(tab.id)}
             />
-          </div>
+          ))}
         </div>
-      </header>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={createNewTab}
+          className="h-9 w-9 text-foreground/60 hover:text-foreground hover:bg-white/5 flex-shrink-0"
+        >
+          <Plus className="w-5 h-5" />
+        </Button>
+      </div>
 
-      {/* Main content */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-20">
-        <div className="w-full max-w-4xl mx-auto space-y-16">
-          {/* Time and Logo Section */}
-          <div className="text-center space-y-8">
-            <div className="relative inline-block">
-              <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 rounded-3xl opacity-20 blur-3xl animate-glow" />
-              <h1 className="relative text-8xl md:text-9xl font-light tracking-tight text-foreground">
-                {formatTime(time)}
-              </h1>
-            </div>
+      {/* Navigation Bar - only show when there's a URL */}
+      {activeTab && activeTab.url && (
+        <BrowserNavBar
+          currentUrl={activeTab.url}
+          onNavigate={navigateToUrl}
+          onBack={goBack}
+          onForward={goForward}
+          onReload={reload}
+          canGoBack={activeTab.historyIndex > 0}
+          canGoForward={activeTab.historyIndex < activeTab.history.length - 1}
+        />
+      )}
 
-            {/* Logo and text */}
-            <div className="flex items-center justify-center gap-4 mt-12">
-              <div className="relative w-16 h-16 md:w-20 md:h-20">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-2xl opacity-30 blur-xl animate-pulse" />
-                <img
-                  src={logoMain}
-                  alt="Unisphere"
-                  className="relative w-full h-full object-cover rounded-2xl"
-                  style={{ 
-                    mixBlendMode: 'screen',
-                    opacity: 0.85
-                  }}
-                />
-              </div>
-              <div className="text-left">
-                <h2 className="text-3xl md:text-4xl font-light text-foreground">
-                  Unisphere
-                </h2>
-                <p className="text-lg md:text-xl text-muted-foreground font-light">
-                  Your Minimalist Browser
-                </p>
-              </div>
-            </div>
+      {/* Content Area */}
+      <div className="flex-1 relative overflow-hidden">
+        {tabs.map(tab => (
+          <div
+            key={tab.id}
+            className={`absolute inset-0 ${tab.id === activeTabId ? 'block' : 'hidden'}`}
+          >
+            {tab.url ? (
+              <iframe
+                data-tab-id={tab.id}
+                src={tab.url}
+                className="w-full h-full border-none"
+                title={tab.title}
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            ) : (
+              <BrowserHomePage onNavigate={navigateToUrl} />
+            )}
           </div>
-
-          {/* Search bar */}
-          <SearchBar />
-
-          {/* Quick links */}
-          <QuickLinks />
-        </div>
-      </main>
-
-      {/* Floating orbs for extra ambiance */}
-      <div className="fixed top-20 right-20 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '0s' }} />
-      <div className="fixed bottom-20 left-20 w-80 h-80 bg-pink-600/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-      <div className="fixed top-1/2 right-1/3 w-72 h-72 bg-orange-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }} />
+        ))}
+      </div>
     </div>
   );
 };
